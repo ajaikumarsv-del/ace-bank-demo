@@ -14,7 +14,7 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import streamlit as st
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
@@ -34,16 +34,15 @@ NAVY_2 = "#16365F"
 GOLD = "#C9A24D"
 GOLD_2 = "#E3C27A"
 
-BANK_IFSC_PREFIX = "ACEB000"
-DATA_START = date(2025, 4, 1)  # synthetic history begins at start of FY 2025-26
+DATA_START = date(2025, 1, 1)  # synthetic history begins Jan 1, 2025
 
 # ─────────────────────────────────────────────────────────────
 # Demo employees (override via Streamlit secrets — see README)
 # ─────────────────────────────────────────────────────────────
 DEFAULT_EMPLOYEES = {
-    "EMP1001": {"password": "Ace@2026", "name": "Priya Sharma", "role": "Relationship Manager", "branch": "Mumbai – BKC"},
-    "EMP1002": {"password": "Ace@2026", "name": "Rahul Mehta", "role": "Branch Operations Head", "branch": "Pune – Baner"},
-    "ADMIN": {"password": "Admin@123", "name": "Demo Administrator", "role": "Commercial Banking Admin", "branch": "Head Office"},
+    "EMP1001": {"password": "Ace@2026", "name": "Emily Carter", "role": "Relationship Manager", "branch": "New York – Midtown"},
+    "EMP1002": {"password": "Ace@2026", "name": "Michael Reyes", "role": "Branch Operations Manager", "branch": "Chicago – The Loop"},
+    "ADMIN": {"password": "Admin@123", "name": "Demo Administrator", "role": "Commercial Banking Admin", "branch": "Head Office – New York"},
 }
 
 
@@ -62,33 +61,30 @@ EMPLOYEES = load_employees()
 # Synthetic commercial accounts
 # ─────────────────────────────────────────────────────────────
 COMPANIES = [
-    ("Sterling Textiles Pvt Ltd", "Textile Manufacturing", "Surat", "Ring Road, Surat, Gujarat 395002"),
-    ("Horizon Logistics LLP", "Logistics & Freight", "Mumbai", "Andheri East, Mumbai, Maharashtra 400069"),
-    ("Nimbus Software Solutions Pvt Ltd", "IT Services", "Pune", "Hinjawadi Phase 1, Pune, Maharashtra 411057"),
-    ("Greenleaf Agro Exports", "Agri Exports", "Nashik", "MIDC Satpur, Nashik, Maharashtra 422007"),
-    ("Apex Pharma Distributors", "Pharma Distribution", "Ahmedabad", "SG Highway, Ahmedabad, Gujarat 380054"),
-    ("Bluewave Hospitality Pvt Ltd", "Hospitality", "Goa", "Candolim, Bardez, Goa 403515"),
-    ("Crestline Constructions Ltd", "Infrastructure", "Bengaluru", "Whitefield, Bengaluru, Karnataka 560066"),
-    ("Orion Auto Components Pvt Ltd", "Auto Components", "Chennai", "Oragadam, Chennai, Tamil Nadu 602105"),
-    ("Saffron Foods & Beverages", "FMCG", "Indore", "Pithampur Industrial Area, Indore, MP 454775"),
-    ("Vertex Engineering Works", "Engineering", "Coimbatore", "Peelamedu, Coimbatore, Tamil Nadu 641004"),
-    ("Lotus Healthcare Pvt Ltd", "Healthcare", "Hyderabad", "Gachibowli, Hyderabad, Telangana 500032"),
-    ("Meridian Retail Ventures", "Retail", "New Delhi", "Connaught Place, New Delhi 110001"),
-    ("Quantum Electricals Pvt Ltd", "Electrical Equipment", "Noida", "Sector 63, Noida, Uttar Pradesh 201301"),
-    ("Silverline Fashion House", "Apparel", "Jaipur", "Sitapura Industrial Area, Jaipur, Rajasthan 302022"),
-    ("Evergreen Packaging Industries", "Packaging", "Vadodara", "Makarpura GIDC, Vadodara, Gujarat 390010"),
+    ("Sterling Textiles Inc.", "Textile Manufacturing", "Charlotte", "1420 Tryon Industrial Pkwy, Charlotte, NC 28206"),
+    ("Horizon Freight Logistics LLC", "Logistics & Freight", "Newark", "88 Port Street, Newark, NJ 07114"),
+    ("Nimbus Software Solutions Inc.", "Software & IT Services", "Austin", "500 Congress Ave, Suite 1200, Austin, TX 78701"),
+    ("Greenfield Agri Exports LLC", "Agricultural Exports", "Fresno", "2750 S Cherry Ave, Fresno, CA 93706"),
+    ("Apex Medical Supply Co.", "Medical Distribution", "Columbus", "4100 Fisher Rd, Columbus, OH 43228"),
+    ("Bluewater Hospitality Group", "Hospitality", "Miami", "1600 Collins Ave, Miami Beach, FL 33139"),
+    ("Crestline Construction Corp.", "Construction", "Denver", "3300 Brighton Blvd, Denver, CO 80216"),
+    ("Orion Auto Parts Inc.", "Auto Components", "Detroit", "9200 Michigan Ave, Detroit, MI 48210"),
+    ("Liberty Foods & Beverage Co.", "Food & Beverage", "Chicago", "2201 W Fulton St, Chicago, IL 60612"),
+    ("Vertex Engineering Group LLC", "Engineering Services", "Houston", "1111 Bagby St, Suite 900, Houston, TX 77002"),
+    ("Summit Healthcare Partners", "Healthcare", "Phoenix", "2800 N Central Ave, Phoenix, AZ 85004"),
+    ("Meridian Retail Holdings", "Retail", "New York", "350 Fifth Avenue, New York, NY 10118"),
+    ("Quantum Electric Supply Co.", "Electrical Equipment", "Atlanta", "1050 Marietta Blvd NW, Atlanta, GA 30318"),
+    ("Silverline Apparel Co.", "Apparel", "Los Angeles", "1200 S Santee St, Los Angeles, CA 90015"),
+    ("Evergreen Packaging Solutions", "Packaging", "Seattle", "4400 E Marginal Way S, Seattle, WA 98134"),
 ]
 
 ACCOUNT_TYPES = [
-    "Current Account – Business Premium",
-    "Current Account – Corporate Elite",
-    "Current Account – Trade & Forex",
-    "Current Account – SME Plus",
+    "Business Checking – Premier",
+    "Commercial Checking – Elite",
+    "Business Analyzed Checking",
+    "Business Checking – Small Business Plus",
 ]
-STATE_CODES = {"Surat": "24", "Ahmedabad": "24", "Vadodara": "24", "Mumbai": "27", "Pune": "27", "Nashik": "27",
-               "Goa": "30", "Bengaluru": "29", "Chennai": "33", "Coimbatore": "33", "Indore": "23",
-               "Hyderabad": "36", "New Delhi": "07", "Noida": "09", "Jaipur": "08"}
-RMS = ["Priya Sharma", "Rahul Mehta", "Ananya Iyer", "Vikram Desai", "Sneha Kulkarni"]
+RMS = ["Emily Carter", "Michael Reyes", "Sarah Thompson", "David Kim", "Jessica Alvarez"]
 
 
 @st.cache_data
@@ -96,9 +92,7 @@ def build_accounts():
     rng = random.Random(2026)
     accounts = []
     for i, (name, industry, city, address) in enumerate(COMPANIES):
-        acct_no = f"5010{rng.randint(10_000_000, 99_999_999)}"
-        initials = "".join(w[0] for w in name.split()[:2]).upper()
-        pan = f"AA{rng.choice('ABCF')}{initials[0]}{rng.choice('CF')}{rng.randint(1000, 9999)}{rng.choice('ABCDEFGHJK')}"
+        acct_no = f"4020{rng.randint(10_000_000, 99_999_999)}"
         accounts.append({
             "account_no": acct_no,
             "name": name,
@@ -107,13 +101,13 @@ def build_accounts():
             "address": address,
             "account_type": rng.choice(ACCOUNT_TYPES),
             "customer_id": f"CIF{rng.randint(1_000_000, 9_999_999)}",
-            "gstin": f"{STATE_CODES[city]}{pan}1Z{rng.randint(1, 9)}",
+            "ein": f"{rng.randint(10, 98)}-{rng.randint(1_000_000, 9_999_999)}",
             "branch": f"{city} Main Branch",
-            "ifsc": f"{BANK_IFSC_PREFIX}{rng.randint(1000, 9999)}",
+            "routing": f"0{rng.randint(21, 99)}{rng.randint(100_000, 999_999)}",
             "opened": date(rng.randint(2012, 2023), rng.randint(1, 12), rng.randint(1, 28)),
             "rm": rng.choice(RMS),
-            "scale": rng.choice([20_000, 35_000, 50_000, 80_000, 120_000]),
-            "opening_balance": round(rng.uniform(15, 90) * 100_000, 2),
+            "scale": rng.choice([2_500, 4_000, 6_000, 9_000, 15_000]),
+            "opening_balance": round(rng.uniform(1.5, 9) * 100_000, 2),
             "status": "Active",
         })
     return accounts
@@ -122,14 +116,16 @@ def build_accounts():
 ACCOUNTS = build_accounts()
 ACCOUNT_MAP = {a["account_no"]: a for a in ACCOUNTS}
 
-CLIENTS = ["Reliant Traders", "Kaveri Enterprises", "Northstar Retail", "Indus Distributors", "Pinnacle Exports",
-           "Shree Ganesh Agencies", "Metro Wholesale Hub", "Coastal Marine Supplies", "Prime Mart Stores",
-           "Unity Infra Projects", "Global Sourcing Co", "Sunrise Industries", "Aarav Enterprises",
-           "Deccan Trading Co", "Blue Ocean Imports"]
-VENDORS = ["Rapid Freight Carriers", "Om Sai Raw Materials", "TechServe IT Support", "Bharat Steel Suppliers",
-           "City Office Supplies", "Precision Tools Co", "SafeGuard Security Services", "Green Power Solutions",
-           "Krishna Chemicals", "Elite Facility Mgmt", "Swift Courier Services", "Apex Insurance Brokers"]
-OTHER_BANKS = ["NRBK0004521", "UNTB0001187", "CSTL0002290", "PNXB0000874", "MDLB0003316"]
+CLIENTS = ["Reliant Traders LLC", "Keystone Distributors", "Northstar Retail Inc", "Patriot Wholesale Co",
+           "Pinnacle Imports", "Golden Gate Supply", "Metro Wholesale Hub", "Coastal Marine Supply",
+           "Prime Mart Stores", "Unity Infrastructure", "Global Sourcing Co", "Sunrise Industries",
+           "Lakeside Ventures", "Frontier Trading Co", "Blue Ocean Imports"]
+VENDORS = ["Rapid Freight Carriers", "Midwest Raw Materials", "TechServe IT Support", "Allied Steel Supply",
+           "City Office Supplies", "Precision Tools Co", "SafeGuard Security Svcs", "Green Power Solutions",
+           "Keystone Chemicals", "Elite Facility Mgmt", "Swift Courier Services", "Harbor Insurance Brokers"]
+OTHER_BANKS = ["FIRST MERIDIAN BK", "UNITED HARBOR BK", "CASTLE ROCK BK", "PINNACLE NATL BK", "MIDLAND TRUST BK"]
+LANDLORDS = ["PARKVIEW PROPERTIES", "SUMMIT REALTY MGMT", "CORNERSTONE LEASING"]
+UTILITIES = ["CITY POWER & LIGHT", "METRO GAS & ELECTRIC", "REGIONAL ENERGY CO"]
 MONTHS = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
 
@@ -150,7 +146,7 @@ def get_transactions(acct_no: str, upto: date) -> pd.DataFrame:
     def post(d, desc, ref, debit=0.0, credit=0.0, value_date=None):
         nonlocal bal
         bal = round(bal - debit + credit, 2)
-        rows.append({"Date": d, "Value Date": value_date or d, "Narration": desc, "Ref No": ref,
+        rows.append({"Date": d, "Posted Date": value_date or d, "Description": desc, "Ref No": ref,
                      "Withdrawal": round(debit, 2), "Deposit": round(credit, 2), "Balance": bal})
 
     def try_debit(d, desc, ref, amt, value_date=None):
@@ -163,50 +159,53 @@ def get_transactions(acct_no: str, upto: date) -> pd.DataFrame:
         last_day = monthrange(d.year, d.month)[1]
         mon = f"{MONTHS[d.month]} {d.year}"
 
-        # Fixed monthly items
-        if d.day == 1:
-            try_debit(d, f"SALARY PAYOUT {mon} - BULK NEFT BATCH {rng.randint(100, 999)}", _ref(rng), base * rng.uniform(6, 8.5))
-        if d.day == 5:
-            try_debit(d, f"SI-RENT {mon} - PREMISES LEASE", _ref(rng), base * rng.uniform(0.8, 1.1))
-        if d.day == 7:
-            try_debit(d, f"TDS PAYMENT CHALLAN 281 - {mon}", _ref(rng), base * rng.uniform(0.3, 0.6))
+        # Fixed monthly / semi-monthly items
+        if d.day in (1, 15):
+            try_debit(d, f"PAYROLL ACH DEBIT - DIRECT DEPOSIT BATCH {rng.randint(1000, 9999)}", _ref(rng), base * rng.uniform(3, 4.3))
+        if d.day == 3:
+            try_debit(d, f"ACH DEBIT {rng.choice(LANDLORDS)} - LEASE {mon}", _ref(rng), base * rng.uniform(0.8, 1.1))
+        if d.day in (2, 16):
+            try_debit(d, "IRS USATAXPYMT EFTPS - FORM 941 PAYROLL TAX", _ref(rng), base * rng.uniform(0.6, 0.9))
         if d.day == 12:
-            try_debit(d, "ELECTRICITY BILL - STATE DISCOM BBPS", _ref(rng), base * rng.uniform(0.15, 0.35))
+            try_debit(d, f"ACH DEBIT {rng.choice(UTILITIES)} - UTILITY BILL", _ref(rng), base * rng.uniform(0.1, 0.25))
         if d.day == 20:
-            try_debit(d, f"GST PAYMENT - CBIC PMT-06 {mon}", _ref(rng), base * rng.uniform(1.2, 2.2))
+            try_debit(d, f"STATE DEPT OF REVENUE - SALES TAX {mon}", _ref(rng), base * rng.uniform(0.8, 1.6))
+        if d.day == 25:
+            try_debit(d, "ACH DEBIT GROUP HEALTH PLAN PREMIUM", _ref(rng), base * rng.uniform(0.5, 0.8))
 
-        # Business-day activity
-        if d.weekday() < 6:
+        # Business-day activity (Mon–Fri)
+        if d.weekday() < 5:
             for _ in range(rng.choices([0, 1, 2, 3, 4], [2, 3, 3, 2, 1])[0]):
                 mode = rng.random()
                 if rng.random() < 0.5:  # credit
                     client = rng.choice(CLIENTS).upper()
                     amt = round(base * rng.lognormvariate(0, 0.7), 2)
                     if mode < 0.40:
-                        post(d, f"NEFT CR-{rng.choice(OTHER_BANKS)}-{client}-INV{rng.randint(1000, 9999)}", _ref(rng), credit=amt)
+                        post(d, f"ACH CREDIT {client} - INV {rng.randint(10000, 99999)}", _ref(rng), credit=amt)
                     elif mode < 0.60:
-                        post(d, f"RTGS CR-{rng.choice(OTHER_BANKS)}-{client}", f"UTR{rng.randint(10**11, 10**12 - 1)}", credit=amt * 2.5)
+                        post(d, f"INCOMING WIRE - {rng.choice(OTHER_BANKS)} - {client}",
+                             f"FED{rng.randint(10**9, 10**10 - 1)}", credit=amt * 2.5)
                     elif mode < 0.80:
-                        post(d, f"CHQ DEP-{rng.randint(100000, 999999)}-{client}", _ref(rng), credit=amt,
+                        post(d, f"MOBILE CHECK DEPOSIT #{rng.randint(1000, 9999)} - {client}", _ref(rng), credit=amt,
                              value_date=d + timedelta(days=1))
                     else:
-                        post(d, f"UPI/CR/{rng.randint(10**11, 10**12 - 1)}/{client}", _ref(rng), credit=amt * 0.3)
+                        post(d, f"RTP INSTANT PAYMENT CR - {client}", _ref(rng), credit=amt * 0.3)
                 else:  # debit
                     vendor = rng.choice(VENDORS).upper()
                     amt = base * rng.lognormvariate(0, 0.7) * 0.6
                     if mode < 0.45:
-                        try_debit(d, f"NEFT DR-{rng.choice(OTHER_BANKS)}-{vendor}", _ref(rng), amt)
+                        try_debit(d, f"ACH DEBIT {vendor} - VENDOR PMT", _ref(rng), amt)
                     elif mode < 0.65:
-                        try_debit(d, f"RTGS DR-{vendor}", f"UTR{rng.randint(10**11, 10**12 - 1)}", amt * 2)
+                        try_debit(d, f"OUTGOING WIRE - {vendor}", f"FED{rng.randint(10**9, 10**10 - 1)}", amt * 2)
                     elif mode < 0.85:
-                        try_debit(d, f"CHQ PAID-{rng.randint(100000, 999999)}-{vendor}", _ref(rng), amt)
+                        try_debit(d, f"CHECK #{rng.randint(1000, 9999)} PAID - {vendor}", _ref(rng), amt)
                     else:
-                        try_debit(d, f"IMPS DR/{rng.randint(10**11, 10**12 - 1)}/{vendor}", _ref(rng), amt * 0.4)
+                        try_debit(d, f"BUSINESS CARD PAYMENT - {vendor}", _ref(rng), amt * 0.4)
 
         if d.day == last_day:
-            chg = round(rng.choice([590, 750, 1180, 1500]), 2)
-            post(d, f"ACCOUNT MAINTENANCE CHARGES {mon}", _ref(rng), debit=chg)
-            post(d, f"GST @18% ON CHARGES {mon}", _ref(rng), debit=round(chg * 0.18, 2))
+            post(d, f"MONTHLY SERVICE FEE - {mon}", _ref(rng), debit=float(rng.choice([25, 35, 45, 60])))
+            if rng.random() < 0.6:
+                post(d, "WIRE TRANSFER FEES", _ref(rng), debit=float(rng.choice([15, 30, 45])))
 
         d += timedelta(days=1)
 
@@ -225,19 +224,8 @@ def statement_for(acct_no, start, end):
 # ─────────────────────────────────────────────────────────────
 # Formatting helpers
 # ─────────────────────────────────────────────────────────────
-def fmt_inr(x, symbol=True):
-    neg = x < 0
-    whole, dec = f"{abs(x):.2f}".split(".")
-    if len(whole) > 3:
-        head, tail = whole[:-3], whole[-3:]
-        groups = []
-        while len(head) > 2:
-            groups.insert(0, head[-2:])
-            head = head[:-2]
-        if head:
-            groups.insert(0, head)
-        whole = ",".join(groups) + "," + tail
-    return ("-" if neg else "") + ("₹ " if symbol else "") + f"{whole}.{dec}"
+def fmt_usd(x, symbol=True):
+    return ("-" if x < 0 else "") + ("$" if symbol else "") + f"{abs(x):,.2f}"
 
 
 def mask(acct_no):
@@ -252,7 +240,7 @@ def build_pdf(acct_no, start, end, generated_by):
     a = ACCOUNT_MAP[acct_no]
     df, opening, closing = statement_for(acct_no, start, end)
     buf = io.BytesIO()
-    W, H = A4
+    W, H = letter
     navy, gold = colors.HexColor(NAVY), colors.HexColor(GOLD)
 
     def on_page(c, doc):
@@ -282,7 +270,7 @@ def build_pdf(acct_no, start, end, generated_by):
         c.setFont("Helvetica-Bold", 11)
         c.drawRightString(W - 14 * mm, H - 12.5 * mm, "STATEMENT OF ACCOUNT")
         c.setFont("Helvetica", 8.5)
-        c.drawRightString(W - 14 * mm, H - 18.5 * mm, f"{start:%d %b %Y}  to  {end:%d %b %Y}")
+        c.drawRightString(W - 14 * mm, H - 18.5 * mm, f"{start:%b %d, %Y}  to  {end:%b %d, %Y}")
 
         c.setStrokeColor(colors.HexColor("#D9DEE7"))
         c.line(14 * mm, 14 * mm, W - 14 * mm, 14 * mm)
@@ -290,10 +278,10 @@ def build_pdf(acct_no, start, end, generated_by):
         c.setFillColor(colors.HexColor("#6B7280"))
         c.drawString(14 * mm, 9.5 * mm, "SIMULATED STATEMENT — ACE BANK is a fictional bank. All data is synthetic and for demonstration only. Not a valid financial document.")
         c.drawRightString(W - 14 * mm, 5.5 * mm, f"Page {doc.page}")
-        c.drawString(14 * mm, 5.5 * mm, f"Generated by {generated_by} on {datetime.now():%d %b %Y %H:%M}")
+        c.drawString(14 * mm, 5.5 * mm, f"Generated by {generated_by} on {datetime.now():%b %d, %Y %I:%M %p}")
         c.restoreState()
 
-    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=14 * mm, rightMargin=14 * mm,
+    doc = SimpleDocTemplate(buf, pagesize=letter, leftMargin=14 * mm, rightMargin=14 * mm,
                             topMargin=33 * mm, bottomMargin=20 * mm,
                             title=f"ACE BANK Statement {mask(acct_no)}", author="ACE BANK (Simulated)")
 
@@ -311,8 +299,8 @@ def build_pdf(acct_no, start, end, generated_by):
 
     info = [
         kv("Account Number", a["account_no"]) + kv("Customer ID", a["customer_id"]) + kv("Account Type", a["account_type"]),
-        kv("Branch", a["branch"]) + kv("IFSC", a["ifsc"]) + kv("GSTIN", a["gstin"]),
-        kv("Currency", "INR") + kv("Account Opened", a["opened"].strftime("%d %b %Y")) + kv("Relationship Mgr", a["rm"]),
+        kv("Branch", a["branch"]) + kv("Routing No", a["routing"]) + kv("EIN", a["ein"]),
+        kv("Currency", "USD") + kv("Account Opened", a["opened"].strftime("%b %d, %Y")) + kv("Relationship Mgr", a["rm"]),
     ]
     t = Table(info, colWidths=[24 * mm, 36 * mm, 22 * mm, 34 * mm, 26 * mm, 40 * mm])
     t.setStyle(TableStyle([
@@ -324,8 +312,8 @@ def build_pdf(acct_no, start, end, generated_by):
     story += [t, Spacer(1, 4 * mm)]
 
     tot_dr, tot_cr = df["Withdrawal"].sum(), df["Deposit"].sum()
-    summ = [["OPENING BALANCE", "TOTAL DEPOSITS", "TOTAL WITHDRAWALS", "CLOSING BALANCE", "TRANSACTIONS"],
-            [fmt_inr(opening, False), fmt_inr(tot_cr, False), fmt_inr(tot_dr, False), fmt_inr(closing, False), f"{len(df)}"]]
+    summ = [["BEGINNING BALANCE", "TOTAL DEPOSITS", "TOTAL WITHDRAWALS", "ENDING BALANCE", "TRANSACTIONS"],
+            [fmt_usd(opening), fmt_usd(tot_cr), fmt_usd(tot_dr), fmt_usd(closing), f"{len(df)}"]]
     s = Table(summ, colWidths=[38 * mm, 38 * mm, 38 * mm, 38 * mm, 30 * mm])
     s.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), navy), ("TEXTCOLOR", (0, 0), (-1, 0), gold),
@@ -337,15 +325,15 @@ def build_pdf(acct_no, start, end, generated_by):
     ]))
     story += [s, Spacer(1, 5 * mm)]
 
-    head = ["Date", "Narration", "Chq / Ref No", "Value Dt", "Withdrawal (Dr)", "Deposit (Cr)", "Balance"]
-    data = [head, [start.strftime("%d/%m/%y"), Paragraph("<b>OPENING BALANCE</b>", cell), "", "", "", "", fmt_inr(opening, False)]]
+    head = ["Date", "Description", "Check / Ref No", "Posted", "Withdrawals", "Deposits", "Balance"]
+    data = [head, [start.strftime("%m/%d/%y"), Paragraph("<b>BEGINNING BALANCE</b>", cell), "", "", "", "", fmt_usd(opening, False)]]
     for r in df.itertuples(index=False):
-        data.append([r.Date.strftime("%d/%m/%y"), Paragraph(r.Narration, cell), r._3, r._1.strftime("%d/%m/%y"),
-                     fmt_inr(r.Withdrawal, False) if r.Withdrawal else "",
-                     fmt_inr(r.Deposit, False) if r.Deposit else "",
-                     fmt_inr(r.Balance, False)])
-    data.append(["", Paragraph("<b>CLOSING BALANCE</b>", cell), "", "",
-                 fmt_inr(tot_dr, False), fmt_inr(tot_cr, False), fmt_inr(closing, False)])
+        data.append([r.Date.strftime("%m/%d/%y"), Paragraph(r.Description, cell), r._3, r._1.strftime("%m/%d/%y"),
+                     fmt_usd(r.Withdrawal, False) if r.Withdrawal else "",
+                     fmt_usd(r.Deposit, False) if r.Deposit else "",
+                     fmt_usd(r.Balance, False)])
+    data.append(["", Paragraph("<b>ENDING BALANCE</b>", cell), "", "",
+                 fmt_usd(tot_dr, False), fmt_usd(tot_cr, False), fmt_usd(closing, False)])
 
     tx = Table(data, colWidths=[15 * mm, 60 * mm, 27 * mm, 15 * mm, 22 * mm, 22 * mm, 21 * mm], repeatRows=1)
     style = [
@@ -372,15 +360,15 @@ def build_pdf(acct_no, start, end, generated_by):
 def build_csv(acct_no, start, end):
     df, opening, closing = statement_for(acct_no, start, end)
     out = df.copy()
-    out["Date"] = pd.to_datetime(out["Date"]).dt.strftime("%d-%m-%Y")
-    out["Value Date"] = pd.to_datetime(out["Value Date"]).dt.strftime("%d-%m-%Y")
+    out["Date"] = pd.to_datetime(out["Date"]).dt.strftime("%m/%d/%Y")
+    out["Posted Date"] = pd.to_datetime(out["Posted Date"]).dt.strftime("%m/%d/%Y")
     for col in ("Withdrawal", "Deposit"):
         out[col] = out[col].map(lambda v: f"{v:.2f}" if v else "")
     out["Balance"] = out["Balance"].map(lambda v: f"{v:.2f}")
-    opening_row = pd.DataFrame([{"Date": start.strftime("%d-%m-%Y"), "Value Date": "", "Narration": "OPENING BALANCE",
+    opening_row = pd.DataFrame([{"Date": start.strftime("%m/%d/%Y"), "Posted Date": "", "Description": "BEGINNING BALANCE",
                                  "Ref No": "", "Withdrawal": "", "Deposit": "", "Balance": round(opening, 2)}])
     out = pd.concat([opening_row, out], ignore_index=True)
-    out.columns = ["Date", "Value Date", "Narration", "Ref No", "Withdrawal (Dr)", "Deposit (Cr)", "Balance"]
+    out.columns = ["Date", "Posted Date", "Description", "Ref No", "Withdrawals (USD)", "Deposits (USD)", "Balance (USD)"]
     return out.to_csv(index=False).encode("utf-8")
 
 
@@ -519,7 +507,7 @@ def login_page():
           <div class="feat">
             <div><b>{len(ACCOUNTS)}</b>Commercial accounts</div>
             <div><b>PDF · CSV</b>Statement formats</div>
-            <div><b>24×7</b>Branch-ready</div>
+            <div><b>USD</b>Commercial checking</div>
           </div>
         </div>""", unsafe_allow_html=True)
     with right:
@@ -554,7 +542,7 @@ def sidebar(emp):
             <div class="emp-name">{emp['name']}</div><div class="emp-role">{emp['role']}</div>
             <div class="emp-role" style="margin-top:8px">🆔 {st.session_state.emp_id} &nbsp;·&nbsp; 📍 {emp['branch']}</div></div>""",
                     unsafe_allow_html=True)
-        st.markdown(f"<span style='font-size:12px'>🕒 Session started {datetime.now():%d %b %Y, %H:%M}</span>", unsafe_allow_html=True)
+        st.markdown(f"<span style='font-size:12px'>🕒 Session started {datetime.now():%b %d, %Y, %I:%M %p}</span>", unsafe_allow_html=True)
         st.write("")
         if st.button("Sign out"):
             for k in ("emp_id", "acct_no", "stmt"):
@@ -570,7 +558,7 @@ def portal():
     brand()
     st.markdown(f"""<div class="page-head"><div><h2>Account Statements</h2>
         <span>Search a commercial account holder and issue a statement for any date range.</span></div>
-        <span>{datetime.now():%A, %d %B %Y}</span></div>""", unsafe_allow_html=True)
+        <span>{datetime.now():%A, %B %d, %Y}</span></div>""", unsafe_allow_html=True)
 
     # Search
     c1, c2 = st.columns([4, 1])
@@ -617,29 +605,29 @@ def portal():
       <div class="grid">
         <div><div class="k">Account type</div><div class="v">{a['account_type']}</div></div>
         <div><div class="k">Customer ID</div><div class="v">{a['customer_id']}</div></div>
-        <div><div class="k">Branch · IFSC</div><div class="v">{a['branch']} · {a['ifsc']}</div></div>
-        <div><div class="k">GSTIN</div><div class="v">{a['gstin']}</div></div>
+        <div><div class="k">Branch · Routing</div><div class="v">{a['branch']} · {a['routing']}</div></div>
+        <div><div class="k">EIN</div><div class="v">{a['ein']}</div></div>
         <div><div class="k">Industry</div><div class="v">{a['industry']}</div></div>
         <div><div class="k">Relationship manager</div><div class="v">{a['rm']}</div></div>
-        <div><div class="k">Account opened</div><div class="v">{a['opened']:%d %b %Y}</div></div>
+        <div><div class="k">Account opened</div><div class="v">{a['opened']:%b %d, %Y}</div></div>
         <div><div class="k">Registered address</div><div class="v">{a['address']}</div></div>
       </div></div>""", unsafe_allow_html=True)
 
     st.markdown(f"""<div class="kpis">
-      <div class="kpi"><div class="k">Available balance</div><div class="v">{fmt_inr(cur_bal)}</div></div>
-      <div class="kpi cr"><div class="k">Credits · last 30 days</div><div class="v">{fmt_inr(last30['Deposit'].sum())}</div></div>
-      <div class="kpi dr"><div class="k">Debits · last 30 days</div><div class="v">{fmt_inr(last30['Withdrawal'].sum())}</div></div>
+      <div class="kpi"><div class="k">Available balance</div><div class="v">{fmt_usd(cur_bal)}</div></div>
+      <div class="kpi cr"><div class="k">Credits · last 30 days</div><div class="v">{fmt_usd(last30['Deposit'].sum())}</div></div>
+      <div class="kpi dr"><div class="k">Debits · last 30 days</div><div class="v">{fmt_usd(last30['Withdrawal'].sum())}</div></div>
       <div class="kpi"><div class="k">Transactions · last 30 days</div><div class="v">{len(last30)}</div></div>
     </div>""", unsafe_allow_html=True)
 
     # Statement controls
     st.markdown('<div class="section-title">Generate statement</div>', unsafe_allow_html=True)
     today = date.today()
-    fy_start = date(today.year if today.month >= 4 else today.year - 1, 4, 1)
+    ytd_start = date(today.year, 1, 1)
     presets = {"Last 30 days": (today - timedelta(days=30), today),
                "Last 3 months": (today - timedelta(days=91), today),
                "Last 6 months": (today - timedelta(days=182), today),
-               "This financial year": (fy_start, today),
+               "Year to date": (ytd_start, today),
                "Custom range": None}
     p1, p2, p3, p4 = st.columns([1.6, 1, 1, 1])
     with p1:
@@ -648,10 +636,10 @@ def portal():
     custom = preset == "Custom range"
     with p2:
         start = st.date_input("From", value=default[0], min_value=DATA_START, max_value=today,
-                              disabled=not custom, key=f"from_{preset}", format="DD/MM/YYYY")
+                              disabled=not custom, key=f"from_{preset}", format="MM/DD/YYYY")
     with p3:
         end = st.date_input("To", value=default[1], min_value=DATA_START, max_value=today,
-                            disabled=not custom, key=f"to_{preset}", format="DD/MM/YYYY")
+                            disabled=not custom, key=f"to_{preset}", format="MM/DD/YYYY")
     with p4:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
         gen = st.button("Generate statement", width="stretch")
@@ -667,10 +655,10 @@ def portal():
         _, s, e = stmt
         df, opening, closing = statement_for(acct_no, s, e)
         st.markdown(f"""<div class="kpis">
-          <div class="kpi"><div class="k">Opening · {s:%d %b %Y}</div><div class="v">{fmt_inr(opening)}</div></div>
-          <div class="kpi cr"><div class="k">Total deposits</div><div class="v">{fmt_inr(df['Deposit'].sum())}</div></div>
-          <div class="kpi dr"><div class="k">Total withdrawals</div><div class="v">{fmt_inr(df['Withdrawal'].sum())}</div></div>
-          <div class="kpi"><div class="k">Closing · {e:%d %b %Y}</div><div class="v">{fmt_inr(closing)}</div></div>
+          <div class="kpi"><div class="k">Beginning · {s:%b %d, %Y}</div><div class="v">{fmt_usd(opening)}</div></div>
+          <div class="kpi cr"><div class="k">Total deposits</div><div class="v">{fmt_usd(df['Deposit'].sum())}</div></div>
+          <div class="kpi dr"><div class="k">Total withdrawals</div><div class="v">{fmt_usd(df['Withdrawal'].sum())}</div></div>
+          <div class="kpi"><div class="k">Ending · {e:%b %d, %Y}</div><div class="v">{fmt_usd(closing)}</div></div>
         </div>""", unsafe_allow_html=True)
 
         fname = f"ACEBANK_{acct_no}_{s:%Y%m%d}_{e:%Y%m%d}"
@@ -694,12 +682,12 @@ def portal():
             st.dataframe(
                 view, hide_index=True, width="stretch", height=420,
                 column_config={
-                    "Date": st.column_config.DateColumn(format="DD/MM/YYYY"),
-                    "Value Date": st.column_config.DateColumn(format="DD/MM/YYYY"),
-                    "Narration": st.column_config.TextColumn(width="large"),
-                    "Withdrawal": st.column_config.NumberColumn("Withdrawal (Dr)", format="₹ %.2f"),
-                    "Deposit": st.column_config.NumberColumn("Deposit (Cr)", format="₹ %.2f"),
-                    "Balance": st.column_config.NumberColumn(format="₹ %.2f"),
+                    "Date": st.column_config.DateColumn(format="MM/DD/YYYY"),
+                    "Posted Date": st.column_config.DateColumn(format="MM/DD/YYYY"),
+                    "Description": st.column_config.TextColumn(width="large"),
+                    "Withdrawal": st.column_config.NumberColumn("Withdrawals", format="dollar"),
+                    "Deposit": st.column_config.NumberColumn("Deposits", format="dollar"),
+                    "Balance": st.column_config.NumberColumn(format="dollar"),
                 })
     footer()
 

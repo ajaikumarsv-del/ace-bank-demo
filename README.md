@@ -1,12 +1,12 @@
 # ACE BANK — Simulated Employee Portal
 
-A Streamlit demo of a commercial-banking employee portal. **ACE BANK is fictional**; all 15 account holders, account numbers and transactions are synthetic and generated deterministically (same data every run).
+A Streamlit demo of a US commercial-banking employee portal (USD, routing numbers, EINs, ACH/wire/check activity). **ACE BANK is fictional**; all 15 account holders, account numbers and transactions are synthetic and generated deterministically (same data every run).
 
 ## Features
 - Employee login (demo credentials below)
 - Search commercial account holders by 12-digit account number, or pick from the directory
 - Account profile card + 30-day activity KPIs
-- Statement for any date range (presets or custom, from 1 Apr 2025 to today)
+- Statement for any date range (presets or custom, from Jan 1, 2025 to today)
 - Download as **PDF** (branded, watermarked "SIMULATED") or **CSV**
 
 ## Demo logins
@@ -36,7 +36,7 @@ In the app's **Settings → Secrets** on Streamlit Cloud, paste:
 password = "YourPassword"
 name = "Your Name"
 role = "Relationship Manager"
-branch = "Mumbai – BKC"
+branch = "New York – Midtown"
 ```
 If secrets are set, they replace the built-in demo logins.
 
