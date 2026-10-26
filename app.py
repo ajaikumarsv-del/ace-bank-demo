@@ -228,6 +228,23 @@ def fmt_usd(x, symbol=True):
     return ("-" if x < 0 else "") + ("$" if symbol else "") + f"{abs(x):,.2f}"
 
 
+def statement_periods():
+    """Month-end dates of every completed month since DATA_START, newest first."""
+    today = date.today()
+    y, m = today.year, today.month - 1
+    if m == 0:
+        y, m = y - 1, 12
+    out = []
+    while date(y, m, 1) >= date(DATA_START.year, DATA_START.month, 1):
+        out.append(date(y, m, monthrange(y, m)[1]))
+        y, m = (y - 1, 12) if m == 1 else (y, m - 1)
+    return out
+
+
+def fmt_period(d):
+    return f"{d.month}/{d.day}/{d.year}"
+
+
 def mask(acct_no):
     return "XXXX XXXX " + acct_no[-4:]
 
@@ -622,33 +639,18 @@ def portal():
 
     # Statement controls
     st.markdown('<div class="section-title">Generate statement</div>', unsafe_allow_html=True)
-    today = date.today()
-    ytd_start = date(today.year, 1, 1)
-    presets = {"Last 30 days": (today - timedelta(days=30), today),
-               "Last 3 months": (today - timedelta(days=91), today),
-               "Last 6 months": (today - timedelta(days=182), today),
-               "Year to date": (ytd_start, today),
-               "Custom range": None}
-    p1, p2, p3, p4 = st.columns([1.6, 1, 1, 1])
+    periods = statement_periods()
+    p1, p2, _ = st.columns([1.3, 1, 1.7])
     with p1:
-        preset = st.selectbox("Period", list(presets), index=1)
-    default = presets[preset] or (today - timedelta(days=30), today)
-    custom = preset == "Custom range"
+        period_end = st.selectbox("Statement period", periods, format_func=fmt_period, key="period")
+    start, end = date(period_end.year, period_end.month, 1), period_end
     with p2:
-        start = st.date_input("From", value=default[0], min_value=DATA_START, max_value=today,
-                              disabled=not custom, key=f"from_{preset}", format="MM/DD/YYYY")
-    with p3:
-        end = st.date_input("To", value=default[1], min_value=DATA_START, max_value=today,
-                            disabled=not custom, key=f"to_{preset}", format="MM/DD/YYYY")
-    with p4:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
         gen = st.button("Generate statement", width="stretch")
+    st.caption(f"Statement covers {start:%b %d, %Y} – {end:%b %d, %Y}")
 
     if gen:
-        if start > end:
-            st.error("'From' date must be on or before 'To' date.")
-        else:
-            st.session_state.stmt = (acct_no, start, end)
+        st.session_state.stmt = (acct_no, start, end)
 
     stmt = st.session_state.stmt
     if stmt and stmt[0] == acct_no:
